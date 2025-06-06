@@ -10,23 +10,23 @@
     <!-- Konten Utama -->
     <main class="flex-grow flex flex-col justify-center px-4">
       <h2 class="text-3xl text-center font-bold mb-8">Silakan Ambil Nomor Antrian</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      <div class="grid grid-cols-3 gap-6 max-w-6xl mx-auto">
         <div class="border rounded-xl shadow p-6 flex flex-col justify-between bg-blue-50">
           <h3 class="text-xl font-semibold text-center mb-4">Antrian Umum</h3>
-          <button @click="ambilNomor('P')" class="bg-blue-600 text-white text-6xl py-10 rounded-lg shadow hover:bg-blue-700 transition">
-            P-0
+           <button @click="ambilNomor('P')" class="bg-blue-600 text-white text-8xl py-10 rounded-lg shadow hover:bg-blue-700 transition">
+            {{ `P-${counters.P}` }}
           </button>
         </div>
         <div class="border rounded-xl shadow p-6 flex flex-col justify-between bg-green-50">
           <h3 class="text-xl font-semibold text-center mb-4">Antrian Gigi</h3>
-          <button @click="ambilNomor('Q')" class="bg-green-600 text-white text-6xl py-10 rounded-lg shadow hover:bg-green-700 transition">
-            Q-0
+           <button @click="ambilNomor('Q')" class="bg-green-600 text-white text-8xl py-10 rounded-lg shadow hover:bg-green-700 transition">
+            {{ `Q-${counters.Q}` }}
           </button>
         </div>
         <div class="border rounded-xl shadow p-6 flex flex-col justify-between bg-pink-50">
           <h3 class="text-xl font-semibold text-center mb-4">Antrian KIA</h3>
-          <button @click="ambilNomor('R')" class="bg-pink-600 text-white text-6xl py-10 rounded-lg shadow hover:bg-pink-700 transition">
-            R-0
+             <button @click="ambilNomor('R')" class="bg-pink-600 text-white text-8xl py-10 rounded-lg shadow hover:bg-pink-700 transition">
+            {{ `R-${counters.R}` }}
           </button>
         </div>
       </div>
@@ -40,15 +40,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 
-let jenisAntrian = ref('');
+const jenisAntrian = ref('');
+const counters = reactive({ P: 0, Q: 0, R: 0 });
+
+onMounted(() => {
+  fetch('http://localhost:3000/api/counters')
+    .then(res => res.json())
+    .then(data => {
+      Object.assign(counters, data);
+    });
+});
 
 function ambilNomor(prefix) {
   jenisAntrian.value = prefix === 'P' ? 'Antrian Umum' : prefix === 'Q' ? 'Antrian Gigi' : 'Antrian KIA';
   fetch(`http://localhost:3000/api/ambil?prefix=${prefix}`)
     .then(res => res.json())
     .then(data => {
+      const [, nomor] = data.nomor.split('-');
+      counters[prefix] = Number(nomor);
       cetakStruk(data.nomor);
     });
 }
@@ -64,7 +75,7 @@ function cetakStruk(nomor) {
     <body class="flex items-center justify-center h-screen">
       <div class="w-full max-w-sm p-4 border border-gray-300 rounded-xl shadow text-center">
         <div class="text-lg font-semibold text-gray-600 mb-2">${jenisAntrian.value}</div>
-        <div class="text-6xl font-bold text-gray-800">${nomor}</div>
+        <div class="text-8xl font-bold text-gray-800">${nomor}</div>
         <div class="mt-4 text-sm text-gray-500">Harap menunggu panggilan</div>
       </div>
     </body>
