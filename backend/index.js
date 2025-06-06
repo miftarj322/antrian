@@ -42,3 +42,6 @@ app.get('/api/ambil', (req, res) => {
   const nomor = `${prefix}-${counter[prefix]}`;
   res.json({ nomor });
 });
+app.get('/api/counters', (req, res) => {
+  res.json(counter);
+});
